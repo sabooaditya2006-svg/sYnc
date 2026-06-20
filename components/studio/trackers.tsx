@@ -21,6 +21,7 @@ import {
 export function CycleTracker() {
   const { periodDays, togglePeriodDay, profile } = useSync()
   
+  // Calculate phase logic
   const target = Number(profile?.cycleLength) || 28
   let phase = "Follicular phase"
   if (periodDays.length > 0) {
@@ -44,18 +45,18 @@ export function CycleTracker() {
   return (
     <SectionCard
       title="Menstrual Cycle — Calendar Tracker"
-      subtitle="Select days to mark active period flow"
+      subtitle="Tap any date to toggle period flow"
       icon={<CalendarDays className="size-5" />}
     >
       <div className="flex justify-center py-2">
         <DayPicker
           mode="multiple"
+          showOutsideDays={true}
           selected={periodDays.map(day => {
             const d = new Date(); d.setDate(day); return d;
           })}
-          onSelect={(days) => {
-            const day = days?.[days.length - 1]?.getDate();
-            if (day) togglePeriodDay(day);
+          onSelect={(_, selectedDay) => {
+            togglePeriodDay(selectedDay.getDate());
           }}
           className="rounded-xl border border-border p-3"
         />

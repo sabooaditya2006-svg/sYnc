@@ -21,7 +21,7 @@ function SyncSlider({ value, onChange }: { value: number; onChange: (n: number) 
         max={10}
         value={value || 5}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
+        className="sync-slider h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
         style={{
           background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((value || 5) - 1) * 11.1}%, var(--secondary) ${((value || 5) - 1) * 11.1}%, var(--secondary) 100%)`,
         }}
@@ -31,6 +31,51 @@ function SyncSlider({ value, onChange }: { value: number; onChange: (n: number) 
         <span className="font-semibold text-foreground">Selected: {value || "—"}</span>
         <span>10</span>
       </div>
+
+      {/* Add cross-browser thumb styles so the circular thumb has a visible border */}
+      <style jsx global>{`
+        .sync-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          height: 8px;
+        }
+
+        /* WebKit/Blink */
+        .sync-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--primary);
+          border: 3px solid var(--border);
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
+          margin-top: -6px; /* vertically center the thumb over the track */
+          cursor: pointer;
+        }
+
+        /* Firefox */
+        .sync-slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--primary);
+          border: 3px solid var(--border);
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
+          cursor: pointer;
+        }
+
+        /* IE/Edge Legacy */
+        .sync-slider::-ms-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--primary);
+          border: 3px solid var(--border);
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
+          cursor: pointer;
+        }
+      `}</style>
     </div>
   )
 }

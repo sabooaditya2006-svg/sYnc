@@ -259,7 +259,7 @@ function NutritionPane() {
         </button>
         <div>
           <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-            Insulin resistance, in plain words (editable)
+            Identity resistance, in plain words (editable)
           </p>
           <textarea
             value={insulinNote}
@@ -274,11 +274,28 @@ function NutritionPane() {
 }
 
 function MentalPane() {
-  const { journal, setJournal, saveJournal, journalSaved, moodNote, setMoodNote } = useSync()
+  const { 
+    journal, 
+    setJournal, 
+    saveJournal, 
+    journalSaved, 
+    moodNote, 
+    setMoodNote, 
+    breathingCompleted, 
+    toggleBreathing 
+  } = useSync()
+
   return (
     <Pane title="Mental Health" subtitle="A calmer nervous system" icon={<Brain className="size-5" />}>
       <div className="grid gap-5 md:grid-cols-2">
-        <BoxBreathing />
+        <div className="flex flex-col gap-3">
+          <BoxBreathing />
+          <CheckRow 
+            label="Complete 3-Minute Box Breathing Session" 
+            checked={breathingCompleted} 
+            onToggle={toggleBreathing} 
+          />
+        </div>
         <div className="space-y-4">
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground">5-minute Cognitive Offload Journal</p>
@@ -297,7 +314,7 @@ function MentalPane() {
               </Button>
               {journalSaved && (
                 <span className="animate-fade-up flex items-center gap-1 text-xs font-medium text-primary">
-                  <Check className="size-3.5" /> Saved · pillar marked a Win
+                  <Check className="size-3.5" /> Saved · item marked a Win
                 </span>
               )}
             </div>

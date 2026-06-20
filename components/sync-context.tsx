@@ -72,6 +72,8 @@ type SyncContextValue = {
   setJournal: (s: string) => void
   journalSaved: boolean
   saveJournal: () => void
+  breathingCompleted: boolean
+  toggleBreathing: () => void
   moodNote: string
   setMoodNote: (s: string) => void
   exerciseItems: string[]
@@ -125,6 +127,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const [insulinNote, setInsulinNote] = useState("Insulin is the key that lets sugar move from your blood into your cells for energy.")
   const [journal, setJournal] = useState("")
   const [journalSaved, setJournalSaved] = useState(false)
+  const [breathingCompleted, setBreathingCompleted] = useState(false)
   const [moodNote, setMoodNote] = useState("Mood shifts are not 'all in your head.'")
   const [exerciseChecked, setExerciseChecked] = useState<boolean[]>(Array(EXERCISE_ITEMS.length).fill(false))
   const [sleepChecked, setSleepChecked] = useState<boolean[]>(Array(SLEEP_ITEMS.length).fill(false))
@@ -135,7 +138,6 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const [water, setWater] = useState(0)
   const [symptoms, setSymptoms] = useState<SymptomState>({ energy: null, cravings: null, postMealSluggish: null, skin: null, hirsutism: null, acanthosis: null, bloating: 0, gut: null, mood: null, brainFog: null })
   
-  // CORRECTED: Initializing with 'times' array to match your new Medication type
   const [medications, setMedications] = useState<Medication[]>([
     { id: "med-1", name: "Inositol", dosage: "2g", times: ["09:00", "21:00"], frequency: 2, takenCount: 0 },
   ])
@@ -146,6 +148,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const completeOnboarding = () => setOnboarded(true)
   const toggleNutrition = (key: "stroll" | "protein" | "alarm") => setNutrition((prev) => ({ ...prev, [key]: !prev[key] }))
   const saveJournal = () => setJournalSaved(true)
+  const toggleBreathing = () => setBreathingCompleted((prev) => !prev)
   const toggleExercise = (i: number) => setExerciseChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
   const toggleSleep = (i: number) => setSleepChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
   const setQuizAnswer = (id: number, value: string | number) => setQuizAnswers((prev) => ({ ...prev, [id]: value }))
@@ -154,7 +157,6 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const addWeight = (kg: number) => setWeightLogs((prev) => [...prev, { label: `Wk ${prev.length + 1}`, kg }])
   const setSymptom = <K extends keyof SymptomState>(key: K, value: SymptomState[K]) => setSymptoms((prev) => ({ ...prev, [key]: value }))
 
-  // Medication Actions
   const addMedication = (m: Omit<Medication, "id" | "takenCount">) => setMedications((prev) => [...prev, { ...m, id: `med-${Date.now()}`, takenCount: 0 }])
   const removeMedication = (id: string) => setMedications((prev) => prev.filter((m) => m.id !== id))
   const resetMedication = () => setMedications((prev) => prev.map((m) => ({ ...m, takenCount: 0 })))
@@ -165,19 +167,22 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     setMessages((prev) => [...prev, { id: `u-${base}`, role: "user", text: userText }, { id: `s-${base}`, role: "sync", text: answer }])
   }
 
-  // --- Updated Dynamic Progress Logic ---
+  // --- Dynamic Progress Logic ---
   const pillarProgress = useMemo(() => {
     const nutritionScore = (nutrition.stroll ? 33 : 0) + (nutrition.protein ? 33 : 0) + (nutrition.alarm ? 34 : 0);
     const exerciseScore = Math.round((exerciseChecked.filter(Boolean).length / EXERCISE_ITEMS.length) * 100);
     const sleepScore = Math.round((sleepChecked.filter(Boolean).length / SLEEP_ITEMS.length) * 100);
     
+    // Mental Health pillar: 50% for Journal Note, 50% for completing 3-Min Breathing
+    const mentalScore = (journalSaved ? 50 : 0) + (breathingCompleted ? 50 : 0);
+    
     return { 
       nutrition: nutritionScore, 
-      mental: 0, 
+      mental: mentalScore, 
       exercise: exerciseScore, 
       sleep: sleepScore 
     };
-  }, [nutrition, exerciseChecked, sleepChecked]);
+  }, [nutrition, exerciseChecked, sleepChecked, journalSaved, breathingCompleted]);
 
   const pillarsWon = Object.values(pillarProgress).filter(p => p >= 100).length;
   const masterProgress = Math.round(
@@ -192,11 +197,11 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const value: SyncContextValue = {
     profile, setProfile, onboarded, completeOnboarding, skipped, setSkipped, view, setView,
     nutrition, toggleNutrition, insulinNote, setInsulinNote, journal, setJournal, journalSaved, saveJournal,
-    moodNote, setMoodNote, exerciseItems: EXERCISE_ITEMS, exerciseChecked, toggleExercise, sleepItems: SLEEP_ITEMS,
-    sleepChecked, toggleSleep, pillarProgress, pillarsWon, masterProgress, quizAnswers, setQuizAnswer,
-    quizSubmitted, submitQuiz, quizAnsweredCount, periodDays, togglePeriodDay, weightLogs, addWeight,
-    water, setWater, symptoms, setSymptom, riskScore, riskLabel, hasBaseline, medications, addMedication,
-    toggleMedTaken, removeMedication, resetMedication, messages, sendMessage,
+    breathingCompleted, toggleBreathing, moodNote, setMoodNote, exerciseItems: EXERCISE_ITEMS, exerciseChecked, 
+    toggleExercise, sleepItems: SLEEP_ITEMS, sleepChecked, toggleSleep, pillarProgress, pillarsWon, 
+    masterProgress, quizAnswers, setQuizAnswer, quizSubmitted, submitQuiz, quizAnsweredCount, periodDays, 
+    togglePeriodDay, weightLogs, addWeight, water, setWater, symptoms, setSymptom, riskScore, riskLabel, 
+    hasBaseline, medications, addMedication, toggleMedTaken, removeMedication, resetMedication, messages, sendMessage,
   }
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>

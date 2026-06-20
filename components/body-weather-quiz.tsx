@@ -14,89 +14,34 @@ const CATEGORY_ICON: Record<string, React.ReactNode> = {
 }
 
 function SyncSlider({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  const val = value || 5
+  const val = value || 0
   const markers = Array.from({ length: 10 }, (_, i) => i + 1)
 
   return (
-    <div className="mt-2">
-      <input
-        type="range"
-        min={1}
-        max={10}
-        value={val}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="sync-slider h-2 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
-        style={{
-          background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((val || 5) - 1) * 11.1}%, var(--secondary) ${((val || 5) - 1) * 11.1}%, var(--secondary) 100%)`,
-        }}
-      />
-
-      {/* Marker row: 10 circles with visible borders */}
-      <div className="mt-3 flex items-center justify-between px-1">
+    <div className="mt-4">
+      {/* Interactive single row of circles */}
+      <div className="flex items-center justify-between px-1">
         {markers.map((m) => (
-          <span
+          <button
             key={m}
+            type="button"
+            onClick={() => onChange(m)}
             className={cn(
-              "inline-block h-4 w-4 rounded-full border-2 transition-colors",
-              m <= val
-                ? "bg-primary border-primary"
-                : "bg-card border-primary",
+              "h-5 w-5 rounded-full border-2 transition-all duration-200",
+              m === val
+                ? "border-primary bg-primary scale-110 shadow-sm"
+                : "border-primary/40 bg-card hover:border-primary"
             )}
           />
         ))}
       </div>
 
-      <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+      {/* Labels */}
+      <div className="mt-4 flex justify-between text-xs text-muted-foreground">
         <span>1</span>
-        <span className="font-semibold text-foreground">Selected: {value || "—"}</span>
+        <span className="font-semibold text-foreground">Selected: {val || "—"}</span>
         <span>10</span>
       </div>
-
-      {/* Add cross-browser thumb styles so the circular thumb has a visible border */}
-      <style jsx global>{`
-        .sync-slider {
-          -webkit-appearance: none;
-          appearance: none;
-          height: 8px;
-        }
-
-        /* WebKit/Blink */
-        .sync-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: var(--primary);
-          border: 2px solid var(--primary);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.05);
-          margin-top: -6px; /* vertically center the thumb over the track */
-          cursor: pointer;
-          transition: colors;
-        }
-
-        /* Firefox */
-        .sync-slider::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: var(--primary);
-          border: 2px solid var(--primary);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.05);
-          cursor: pointer;
-        }
-
-        /* IE/Edge Legacy */
-        .sync-slider::-ms-thumb {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: var(--primary);
-          border: 2px solid var(--primary);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.05);
-          cursor: pointer;
-        }
-      `}</style>
     </div>
   )
 }

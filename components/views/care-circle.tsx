@@ -89,22 +89,10 @@ function MedicationTimeline() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">{med.name} <span className="text-xs text-muted-foreground">{med.dosage}</span></p>
             </div>
-            <button 
-              onClick={() => removeMedication(med.id)} 
-              className="text-muted-foreground hover:text-red-500 transition"
-              aria-label="Delete medication"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            <button onClick={() => removeMedication(med.id)} className="text-muted-foreground hover:text-red-500 transition"><Trash2 className="size-4" /></button>
           </div>
         ))}
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={resetMedication} 
-          className="w-full mt-4 rounded-xl gap-2 text-muted-foreground"
-        >
+        <Button variant="outline" size="sm" onClick={resetMedication} className="w-full mt-4 rounded-xl gap-2 text-muted-foreground">
           <RotateCcw className="size-4" /> Reset All Progress
         </Button>
       </div>
@@ -113,9 +101,67 @@ function MedicationTimeline() {
 }
 
 function MythbusterChat() {
-  // ... (Keep your existing code for MythbusterChat)
+  const { messages, sendMessage } = useSync()
+  const [input, setInput] = useState("")
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
+  }, [messages])
+
+  const tags = Object.keys(MYTH_ANSWERS)
+
+  const send = (text: string) => {
+    const t = text.trim()
+    if (!t) return
+    const answer = MYTH_ANSWERS[t] ?? "Thank you for asking. This is a judgment-free space."
+    sendMessage(t, answer)
+    setInput("")
+  }
+
+  return (
+    <SectionCard title="Stigma-Free Mythbuster Chatbox" subtitle="Ask anything" icon={<Shield className="size-5" />}>
+      <div ref={scrollRef} className="no-scrollbar max-h-72 space-y-3 overflow-y-auto rounded-2xl bg-secondary/40 p-4">
+        {messages.map((m) => (
+          <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+            <p className={cn("max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed", m.role === "user" ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border")}>
+              {m.text}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <button key={tag} onClick={() => send(tag)} className="rounded-full border border-primary/40 bg-accent/40 px-3 py-1.5 text-xs font-medium text-accent-foreground transition hover:bg-accent">
+            {tag}
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} placeholder="Type your question…" className="flex-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
+        <Button onClick={() => send(input)} className="rounded-2xl px-4" disabled={!input.trim()}><Send className="size-4" /></Button>
+      </div>
+    </SectionCard>
+  )
 }
 
 function SpecialistDirectory() {
-  // ... (Keep your existing code for SpecialistDirectory)
+  return (
+    <SectionCard title="Verified Specialist Directory" subtitle="Community-reviewed experts" icon={<Stethoscope className="size-5" />}>
+      <div className="space-y-3">
+        {SPECIALISTS.map((doc) => (
+          <div key={doc.name} className="flex items-center gap-3 rounded-2xl bg-secondary/40 px-4 py-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary font-heading font-semibold text-primary-foreground">
+              {doc.name.split(" ")[1]?.[0] ?? doc.name[0]}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-1.5 text-sm font-semibold">{doc.name} <ShieldCheck className="size-3.5 text-primary" /></p>
+              <p className="truncate text-xs text-muted-foreground">{doc.specialty}</p>
+            </div>
+            <p className="flex items-center gap-1 text-sm font-medium"><Star className="size-3.5 fill-primary text-primary" /> {doc.rating}</p>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  )
 }

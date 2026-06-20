@@ -3,35 +3,29 @@
 @import 'shadcn/tailwind.css';
 
 @theme inline {
-  --font-sans: 'Fraunces', serif; /* Use a serif font for that premium look */
-}
-
-:root {
-  /* Creamy Backdrop */
-  --background: #FDFBF7;
+  /* This tells Tailwind to create the bg-background and text-foreground utilities */
+  --color-background: #FDFBF7;
+  --color-foreground: #34384A;
   
-  /* Minimalist Dark Slate Typography */
-  --foreground: #34384A;
+  --color-primary: #F8C5C1;
+  --color-primary-foreground: #4A2E2C;
   
-  /* Comforting Coral Pink Accents */
-  --primary: #F8C5C1;
-  --primary-foreground: #4A2E2C;
+  --color-accent: #F8C5C1;
+  --color-accent-foreground: #4A2E2C;
   
-  --accent: #F8C5C1;
-  --accent-foreground: #4A2E2C;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #34384A;
   
-  /* Soft UI Elements */
-  --card: #FFFFFF;
-  --card-foreground: #34384A;
-  --border: #ECE4D7;
-  --muted: #F4EEE5;
-  --muted-foreground: #8A8577;
+  --color-border: #ECE4D7;
+  --color-muted: #F4EEE5;
+  --color-muted-foreground: #8A8577;
   
-  --radius: 1rem;
+  --radius-base: 1rem;
 }
 
 @layer base {
   body {
+    /* Now these will work because they are defined in @theme */
     @apply bg-background text-foreground;
   }
 }

@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(req: Request) {
   const { prompt } = await req.json();
   
-  // Here is where you will eventually put your AI connection code!
-  return NextResponse.json({ reply: "You asked: " + prompt + ". I am a real-time bot now!" });
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // Add context to ensure the AI stays helpful and on-topic
+    const result = await model.generateContent(
+      `You are a helpful, compassionate assistant for someone with PMOS. Answer this question: ${prompt}`
+    );
+    
+    const response = await result.response;
+    const text = response.text();
+    
+    return NextResponse.json({ reply: text });
+  } catch (error) {
+    console.error("AI Error:", error);
+    return NextResponse.json({ reply: "I'm having trouble connecting to my knowledge base right now. Please try again." }, { status: 500 });
+  }
 }

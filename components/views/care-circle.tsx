@@ -7,7 +7,39 @@ import { Button } from "@/components/ui/button"
 import { SPECIALISTS } from "@/lib/sync-data"
 import { cn } from "@/lib/utils"
 import { Pill, Send, Shield, ShieldCheck, Star, Stethoscope, Trash2, RotateCcw } from "lucide-react"
-
+function MedicationTimeline() {
+  const { medications, toggleMedTaken, resetMedication } = useSync()
+  
+  return (
+    <SectionCard 
+      title="Medication Timeline" 
+      subtitle="Your daily routine" 
+      icon={<Pill className="size-5" />}
+    >
+      <div className="space-y-4">
+        {medications.map((med) => (
+          <div key={med.id} className="flex items-center justify-between rounded-2xl bg-secondary/40 px-4 py-3">
+            <div>
+              <p className="font-semibold text-sm">{med.name} • {med.dosage}</p>
+              <p className="text-xs text-muted-foreground">{med.times.join(", ")}</p>
+            </div>
+            <Button 
+              size="sm" 
+              variant={med.takenCount >= med.frequency ? "default" : "outline"}
+              onClick={() => toggleMedTaken(med.id)}
+              className="rounded-xl"
+            >
+              {med.takenCount}/{med.frequency}
+            </Button>
+          </div>
+        ))}
+        <Button variant="ghost" size="sm" onClick={resetMedication} className="w-full gap-2 text-xs">
+          <RotateCcw className="size-3" /> Reset Daily Progress
+        </Button>
+      </div>
+    </SectionCard>
+  )
+}
 export function CareCircle() {
   return (
     <div className="space-y-6">

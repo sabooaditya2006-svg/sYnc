@@ -1,4 +1,4 @@
-:root, .dark, @media (prefers-color-scheme: dark) {
+:root, .dark, @media (prefers-color-scheme: white) {
   /* Applying the custom palette globally */
   --background: #fdfbf7;
   --foreground: #34384a;

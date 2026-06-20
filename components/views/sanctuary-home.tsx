@@ -91,7 +91,7 @@ function MasterTracker({
 
   return (
     <SectionCard
-      title="Username Tracker — Master Progress Tracker"
+      title="Master Progress Tracker"
       subtitle="Four pillars working in harmony"
       icon={<Trophy className="size-5" />}
     >

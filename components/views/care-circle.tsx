@@ -32,63 +32,76 @@ export function CareCircle() {
     </div>
   )
 }
+
 function MedicationTimeline() {
   const { medications, addMedication, toggleMedTaken, removeMedication, resetMedication } = useSync()
   const [name, setName] = useState("")
   const [dosage, setDosage] = useState("")
   const [frequency, setFrequency] = useState(1)
-  const [time, setTime] = useState("09:00")
+  // Store times as an array, default to ["09:00", "13:00", "17:00"] etc.
+  const [times, setTimes] = useState<string[]>(["09:00"])
 
   const add = () => {
     if (!name.trim()) return
-    addMedication({ name, dosage, frequency, time }) // frequency and time are new
-    setName(""); setDosage(""); setFrequency(1)
+    addMedication({ name, dosage, frequency, times: times.slice(0, frequency) })
+    setName(""); setDosage(""); setFrequency(1); setTimes(["09:00"])
   }
 
   return (
-    <SectionCard title="Smart Medication Timeline" subtitle="Build your routine" icon={<Pill className="size-5" />}>
-      {/* Input Area */}
+    <SectionCard title="Smart Medication Timeline" subtitle="Set schedule for each dose" icon={<Pill className="size-5" />}>
       <div className="space-y-3 rounded-2xl bg-secondary/40 p-4">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Medicine name" className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
-        <div className="flex gap-2">
-          <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage" className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
-          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="rounded-2xl border border-border bg-card px-3 text-sm" />
+        <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage" className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
+        
+        <div className="flex items-center gap-3">
+          <label className="text-xs">Frequency:</label>
+          <input type="number" min={1} max={5} value={frequency} onChange={(e) => setFrequency(Number(e.target.value))} className="w-16 rounded-lg border p-1 text-sm" />
         </div>
-        <div className="flex items-center gap-3 px-2">
-          <span className="text-xs text-muted-foreground">Times/day:</span>
-          <input type="number" min={1} max={5} value={frequency} onChange={(e) => setFrequency(Number(e.target.value))} className="w-16 rounded-lg border px-2 py-1 text-center text-sm" />
+
+        {/* Generate time inputs based on frequency */}
+        <div className="grid grid-cols-2 gap-2">
+          {Array.from({ length: frequency }).map((_, i) => (
+            <input 
+              key={i} 
+              type="time" 
+              value={times[i] || "09:00"} 
+              onChange={(e) => {
+                const newTimes = [...times];
+                newTimes[i] = e.target.value;
+                setTimes(newTimes);
+              }}
+              className="rounded-xl border p-2 text-sm" 
+            />
+          ))}
         </div>
         <Button onClick={add} className="w-full rounded-2xl">Add to timeline</Button>
       </div>
 
-      {/* List Area */}
       <div className="mt-5 space-y-3">
         {medications.map((med) => (
           <div key={med.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3">
             <div className="flex gap-1">
-              {/* If frequency is undefined (old data), fallback to 1 */}
-              {[...Array(med.frequency || 1)].map((_, i) => (
+              {med.times.map((time, i) => (
                 <button
                   key={i}
                   onClick={() => toggleMedTaken(med.id)}
-                  className={cn("size-6 rounded-full border-2 transition-all", i < (med.takenCount || 0) ? "bg-primary border-primary" : "border-border")}
+                  className={cn("size-6 rounded-full border-2", i < med.takenCount ? "bg-primary border-primary" : "border-border")}
+                  title={`Scheduled for ${time}`}
                 />
               ))}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">
-                {med.name} <span className="text-muted-foreground text-xs">{med.dosage} · {med.time}</span>
-              </p>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{med.name} <span className="text-xs text-muted-foreground">{med.dosage}</span></p>
+              <div className="flex gap-1 text-[10px] text-muted-foreground">
+                {med.times.map((t, i) => <span key={i}>{t}</span>)}
+              </div>
             </div>
-            <button onClick={() => removeMedication(med.id)} className="text-muted-foreground hover:text-red-500">✕</button>
           </div>
         ))}
-        <Button variant="outline" size="sm" onClick={resetMedication} className="w-full mt-4">Reset Daily Progress</Button>
       </div>
     </SectionCard>
   )
 }
-
 function MythbusterChat() {
   const { messages, sendMessage } = useSync()
   const [input, setInput] = useState("")

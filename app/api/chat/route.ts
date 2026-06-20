@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   console.log("API Key present:", !!process.env.GEMINI_API_KEY);
   try {
     const { prompt } = await req.json();
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const result = await model.generateContent(
       `You are a helpful, compassionate assistant for someone with PMOS. Answer this question: ${prompt}`

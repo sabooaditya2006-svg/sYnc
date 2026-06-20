@@ -2,23 +2,31 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  /* Add your other --color mappings here */
+  --font-sans: 'Fraunces', serif; /* Use a serif font for that premium look */
 }
 
 :root {
-  --background: #fdfbf7;
-  --foreground: #34384a;
-  --primary: #f8c5c1;
-  --primary-foreground: #4a2e2c;
-  --accent: #f8c5c1;
-  --accent-foreground: #4a2e2c;
-  --border: #ece4d7;
-  --ring: #f8c5c1;
+  /* Creamy Backdrop */
+  --background: #FDFBF7;
+  
+  /* Minimalist Dark Slate Typography */
+  --foreground: #34384A;
+  
+  /* Comforting Coral Pink Accents */
+  --primary: #F8C5C1;
+  --primary-foreground: #4A2E2C;
+  
+  --accent: #F8C5C1;
+  --accent-foreground: #4A2E2C;
+  
+  /* Soft UI Elements */
+  --card: #FFFFFF;
+  --card-foreground: #34384A;
+  --border: #ECE4D7;
+  --muted: #F4EEE5;
+  --muted-foreground: #8A8577;
+  
   --radius: 1rem;
 }
 
@@ -27,5 +35,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* Add your animations and utilities below */

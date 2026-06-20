@@ -25,25 +25,10 @@ export type Medication = {
   id: string
   name: string
   dosage: string
-  times: string[] // Changed from 'time' to an array of times
+  times: string[] 
   frequency: number
   takenCount: number
 }
-
-// In your SyncProvider:
-const addMedication = (m: Omit<Medication, "id" | "takenCount">) =>
-  setMedications((prev) => [...prev, { ...m, id: `med-${Date.now()}`, takenCount: 0 }])
-
-const toggleMedTaken = (id: string) =>
-  setMedications((prev) =>
-    prev.map((m) => {
-      if (m.id === id) {
-        const nextCount = m.takenCount >= m.frequency ? 0 : m.takenCount + 1
-        return { ...m, takenCount: nextCount }
-      }
-      return m
-    })
-  )
 
 export type ChatMessage = {
   id: string
@@ -150,14 +135,13 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const [water, setWater] = useState(0)
   const [symptoms, setSymptoms] = useState<SymptomState>({ energy: null, cravings: null, postMealSluggish: null, skin: null, hirsutism: null, acanthosis: null, bloating: 0, gut: null, mood: null, brainFog: null })
   
-  // Medication State
+  // CORRECTED: Initializing with 'times' array to match your new Medication type
   const [medications, setMedications] = useState<Medication[]>([
-    { id: "med-1", name: "Inositol", dosage: "2g", time: "09:00", frequency: 2, takenCount: 0 },
+    { id: "med-1", name: "Inositol", dosage: "2g", times: ["09:00", "21:00"], frequency: 2, takenCount: 0 },
   ])
   
   const [messages, setMessages] = useState<ChatMessage[]>([{ id: "welcome", role: "sync", text: "Hi, I'm your sYnc companion." }])
 
-  // ---- actions ----
   const setProfile = (p: Profile) => setProfileState(p)
   const completeOnboarding = () => setOnboarded(true)
   const toggleNutrition = (key: "stroll" | "protein" | "alarm") => setNutrition((prev) => ({ ...prev, [key]: !prev[key] }))
@@ -181,7 +165,6 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     setMessages((prev) => [...prev, { id: `u-${base}`, role: "user", text: userText }, { id: `s-${base}`, role: "sync", text: answer }])
   }
 
-  // --- Derived pillars logic (omitted for brevity, keep your original ones) ---
   const pillarProgress = useMemo(() => ({ nutrition: 0, mental: 0, exercise: 0, sleep: 0 }), []) 
   const pillarsWon = 0
   const masterProgress = 0

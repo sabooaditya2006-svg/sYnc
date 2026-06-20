@@ -6,9 +6,7 @@ import { SectionCard } from "@/components/sync-ui"
 import { Button } from "@/components/ui/button"
 import { MYTH_ANSWERS, SPECIALISTS } from "@/lib/sync-data"
 import { cn } from "@/lib/utils"
-import { Check, Pill, Plus, Send, Shield, ShieldCheck, Star, Stethoscope } from "lucide-react"
-
-const SLOTS = ["Morning", "Afternoon", "Evening", "Bedtime"]
+import { Check, Pill, Plus, Send, Shield, ShieldCheck, Star, Stethoscope, Trash2, RefreshCcw } from "lucide-react"
 
 export function CareCircle() {
   return (
@@ -38,7 +36,6 @@ function MedicationTimeline() {
   const [name, setName] = useState("")
   const [dosage, setDosage] = useState("")
   const [frequency, setFrequency] = useState(1)
-  // Store times as an array, default to ["09:00", "13:00", "17:00"] etc.
   const [times, setTimes] = useState<string[]>(["09:00"])
 
   const add = () => {
@@ -51,14 +48,13 @@ function MedicationTimeline() {
     <SectionCard title="Smart Medication Timeline" subtitle="Set schedule for each dose" icon={<Pill className="size-5" />}>
       <div className="space-y-3 rounded-2xl bg-secondary/40 p-4">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Medicine name" className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
-        <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage" className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
+        <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage (e.g. 500mg)" className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
         
         <div className="flex items-center gap-3">
-          <label className="text-xs">Frequency:</label>
-          <input type="number" min={1} max={5} value={frequency} onChange={(e) => setFrequency(Number(e.target.value))} className="w-16 rounded-lg border p-1 text-sm" />
+          <label className="text-xs">Frequency per day:</label>
+          <input type="number" min={1} max={5} value={frequency} onChange={(e) => setFrequency(Number(e.target.value))} className="w-16 rounded-lg border p-1 text-sm text-center" />
         </div>
 
-        {/* Generate time inputs based on frequency */}
         <div className="grid grid-cols-2 gap-2">
           {Array.from({ length: frequency }).map((_, i) => (
             <input 
@@ -70,7 +66,7 @@ function MedicationTimeline() {
                 newTimes[i] = e.target.value;
                 setTimes(newTimes);
               }}
-              className="rounded-xl border p-2 text-sm" 
+              className="rounded-xl border p-2 text-sm bg-card" 
             />
           ))}
         </div>
@@ -78,30 +74,35 @@ function MedicationTimeline() {
       </div>
 
       <div className="mt-5 space-y-3">
-        {medications.map((med) => (
+        {(medications || []).map((med) => (
           <div key={med.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3">
             <div className="flex gap-1">
-              {med.times.map((time, i) => (
+              {(med.times || []).map((time, i) => (
                 <button
                   key={i}
                   onClick={() => toggleMedTaken(med.id)}
-                  className={cn("size-6 rounded-full border-2", i < med.takenCount ? "bg-primary border-primary" : "border-border")}
+                  className={cn("size-6 rounded-full border-2 transition-all", i < (med.takenCount || 0) ? "bg-primary border-primary" : "border-border")}
                   title={`Scheduled for ${time}`}
                 />
               ))}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">{med.name} <span className="text-xs text-muted-foreground">{med.dosage}</span></p>
               <div className="flex gap-1 text-[10px] text-muted-foreground">
-                {med.times.map((t, i) => <span key={i}>{t}</span>)}
+                {(med.times || []).map((t, i) => <span key={i}>{t}</span>)}
               </div>
             </div>
+            <button onClick={() => removeMedication(med.id)} className="text-muted-foreground hover:text-red-500 transition"><Trash2 className="size-4" /></button>
           </div>
         ))}
+        <Button variant="outline" size="sm" onClick={resetMedication} className="w-full mt-4 rounded-xl gap-2">
+          <RefreshCcw className="size-4" /> Reset Daily Progress
+        </Button>
       </div>
     </SectionCard>
   )
 }
+
 function MythbusterChat() {
   const { messages, sendMessage } = useSync()
   const [input, setInput] = useState("")
@@ -116,59 +117,32 @@ function MythbusterChat() {
   const send = (text: string) => {
     const t = text.trim()
     if (!t) return
-    const answer =
-      MYTH_ANSWERS[t] ??
-      "Thank you for trusting this space with your question. Whatever you're feeling is valid. PMOS is manageable with steady care, and you are never alone in it — consider bringing this to one of the verified specialists below for personalised guidance."
+    const answer = MYTH_ANSWERS[t] ?? "Thank you for asking. This is a judgment-free space."
     sendMessage(t, answer)
     setInput("")
   }
 
   return (
-    <SectionCard
-      title="Stigma-Free Mythbuster Chatbox"
-      subtitle="Ask anything without judgment or societal stigma"
-      icon={<Shield className="size-5" />}
-    >
+    <SectionCard title="Stigma-Free Mythbuster Chatbox" subtitle="Ask anything" icon={<Shield className="size-5" />}>
       <div ref={scrollRef} className="no-scrollbar max-h-72 space-y-3 overflow-y-auto rounded-2xl bg-secondary/40 p-4">
         {messages.map((m) => (
           <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
-            <p
-              className={cn(
-                "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                m.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-foreground border border-border",
-              )}
-            >
+            <p className={cn("max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed", m.role === "user" ? "bg-primary text-primary-foreground" : "bg-card text-foreground border border-border")}>
               {m.text}
             </p>
           </div>
         ))}
       </div>
-
       <div className="mt-3 flex flex-wrap gap-2">
         {tags.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => send(tag)}
-            className="rounded-full border border-primary/40 bg-accent/40 px-3 py-1.5 text-xs font-medium text-accent-foreground transition hover:bg-accent"
-          >
+          <button key={tag} onClick={() => send(tag)} className="rounded-full border border-primary/40 bg-accent/40 px-3 py-1.5 text-xs font-medium text-accent-foreground transition hover:bg-accent">
             {tag}
           </button>
         ))}
       </div>
-
       <div className="mt-3 flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Type your question…"
-          className="flex-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
-        />
-        <Button onClick={() => send(input)} className="rounded-2xl px-4" disabled={!input.trim()}>
-          <Send className="size-4" />
-        </Button>
+        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} placeholder="Type your question…" className="flex-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none" />
+        <Button onClick={() => send(input)} className="rounded-2xl px-4" disabled={!input.trim()}><Send className="size-4" /></Button>
       </div>
     </SectionCard>
   )
@@ -176,11 +150,7 @@ function MythbusterChat() {
 
 function SpecialistDirectory() {
   return (
-    <SectionCard
-      title="Verified Specialist Directory"
-      subtitle="Community-reviewed gynecologists & endocrinologists"
-      icon={<Stethoscope className="size-5" />}
-    >
+    <SectionCard title="Verified Specialist Directory" subtitle="Community-reviewed experts" icon={<Stethoscope className="size-5" />}>
       <div className="space-y-3">
         {SPECIALISTS.map((doc) => (
           <div key={doc.name} className="flex items-center gap-3 rounded-2xl bg-secondary/40 px-4 py-3">
@@ -188,23 +158,5 @@ function SpecialistDirectory() {
               {doc.name.split(" ")[1]?.[0] ?? doc.name[0]}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                {doc.name}
-                <ShieldCheck className="size-3.5 text-primary" />
-              </p>
-              <p className="truncate text-xs text-muted-foreground">{doc.specialty}</p>
-              <p className="text-xs text-muted-foreground">{doc.location}</p>
-            </div>
-            <div className="text-right">
-              <p className="flex items-center justify-end gap-1 text-sm font-medium text-foreground">
-                <Star className="size-3.5 fill-primary text-primary" />
-                {doc.rating}
-              </p>
-              <p className="text-xs text-muted-foreground">{doc.reviews} reviews</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </SectionCard>
-  )
-}
+              <p className="flex items-center gap-1.5 text-sm font-semibold">{doc.name} <ShieldCheck className="size-3.5 text-primary" /></p>
+              <p className="truncate text-xs text-muted-foreground

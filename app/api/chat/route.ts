@@ -1,26 +1,23 @@
-import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+// Initialize with the new client
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: Request) {
-  console.log("API Key present:", !!process.env.GEMINI_API_KEY);
   try {
     const { prompt } = await req.json();
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
-    const result = await model.generateContent(
-      `You are a helpful, compassionate assistant for someone with PMOS. Answer this question: ${prompt}`
-    );
-    
-    const response = await result.response;
-    const text = response.text();
-    
-    return NextResponse.json({ reply: text });
+    // The new SDK uses the models interface
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash", // Ensure you use a current model
+      contents: prompt,
+    });
+
+    return NextResponse.json({ reply: response.text });
   } catch (error) {
     console.error("AI Error:", error);
     return NextResponse.json(
-      { reply: "I'm having trouble connecting to my knowledge base right now. Please try again." }, 
+      { reply: "Authentication failed. Ensure your API key is restricted to Gemini API only." }, 
       { status: 500 }
     );
   }

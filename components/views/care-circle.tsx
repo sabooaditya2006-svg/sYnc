@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { SPECIALISTS } from "@/lib/sync-data"
 import { cn } from "@/lib/utils"
 import { Pill, Send, Shield, ShieldCheck, Star, Stethoscope, Trash2, RotateCcw } from "lucide-react"
+import { specialistsData } from './specialistsData';
 function MedicationTimeline() {
   const { medications, toggleMedTaken, resetMedication } = useSync()
   
@@ -132,20 +133,24 @@ function SpecialistDirectory() {
 
   return (
     <SectionCard title="Verified Specialist Directory" subtitle="Experts near you" icon={<Stethoscope className="size-5" />}>
-      <div className="space-y-3">
-        {localSpecialists.map((doc) => (
-          <div key={doc.name} className="flex items-center gap-3 rounded-2xl bg-secondary/40 px-4 py-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary font-heading font-semibold text-primary-foreground">
-              {doc.name.split(" ")[1]?.[0] ?? doc.name[0]}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 text-sm font-semibold">{doc.name} <ShieldCheck className="size-3.5 text-primary" /></p>
-              <p className="truncate text-xs text-muted-foreground">{doc.specialty}</p>
-            </div>
-            <p className="flex items-center gap-1 text-sm font-medium"><Star className="size-3.5 fill-primary text-primary" /> {doc.rating}</p>
-          </div>
-        ))}
+  <div className="space-y-3">
+    {specialistsData.map((doc) => (
+      <div key={doc.id} className="flex items-center gap-3 rounded-2xl bg-secondary/40 px-4 py-3">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary font-heading font-semibold text-primary-foreground">
+          {doc.name.split(" ")[1]?.[0] ?? doc.name[0]}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            {doc.name} <ShieldCheck className="size-3.5 text-primary" />
+          </p>
+          <p className="truncate text-xs text-muted-foreground">{doc.specialty}</p>
+        </div>
+        <p className="flex items-center gap-1 text-sm font-medium">
+          <Star className="size-3.5 fill-primary text-primary" /> {doc.rating}
+        </p>
       </div>
-    </SectionCard>
+    ))}
+  </div>
+</SectionCard>
   )
 }

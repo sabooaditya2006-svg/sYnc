@@ -1,63 +1,121 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Pause, Play } from "lucide-react"
+import { Play, Square, CheckCircle2 } from "lucide-react"
 
-const PHASES = [
-  { label: "Breathe In", duration: 4000, scale: 1 },
-  { label: "Hold", duration: 4000, scale: 1 },
-  { label: "Breathe Out", duration: 4000, scale: 0.6 },
-  { label: "Hold", duration: 4000, scale: 0.6 },
-]
+type BoxBreathingProps = {
+  onComplete?: () => void
+  isCompleted?: boolean
+}
 
-export function BoxBreathing() {
-  const [running, setRunning] = useState(false)
-  const [phase, setPhase] = useState(0)
-  const [scale, setScale] = useState(0.6)
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+export function BoxBreathing({ onComplete, isCompleted = false }: BoxBreathingProps) {
+  const [isActive, setIsActive] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(180) // 3 minutes total
+  const [cycleStep, setCycleStep] = useState<"In" | "Hold" | "Out" | "Hold Again">("In")
+  const [stepSeconds, setStepSeconds] = useState(4)
 
   useEffect(() => {
-    if (!running) return
-    setScale(PHASES[phase].scale)
-    timer.current = setTimeout(() => {
-      setPhase((p) => (p + 1) % PHASES.length)
-    }, PHASES[phase].duration)
-    return () => {
-      if (timer.current) clearTimeout(timer.current)
-    }
-  }, [running, phase])
+    let timer: NodeJS.Timeout
+    if (isActive && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            setIsActive(false)
+            if (onComplete) onComplete()
+            return 0
+          }
+          return prev - 1
+        })
 
-  const toggle = () => {
-    if (running) {
-      setRunning(false)
-      setScale(0.6)
-      setPhase(0)
-    } else {
-      setRunning(true)
-      setPhase(0)
+        setStepSeconds((prevStep) => {
+          if (prevStep <= 1) {
+            setCycleStep((current) => {
+              if (current === "In") return "Hold"
+              if (current === "Hold") return "Out"
+              if (current === "Out") return "Hold Again"
+              return "In"
+            })
+            return 4
+          }
+          return prevStep - 1
+        })
+      }, 1000)
     }
+    return () => clearInterval(timer)
+  }, [isActive, timeLeft, onComplete])
+
+  const startSession = () => {
+    if (isCompleted) return
+    setIsActive(true)
+    setCycleStep("In")
+    setStepSeconds(4)
+    setTimeLeft(180)
   }
 
+  const stopSession = () => {
+    setIsActive(false)
+    setCycleStep("In")
+    setStepSeconds(4)
+  }
+
+  const minutes = Math.floor(timeLeft / 60)
+  const seconds = timeLeft % 60
+
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl bg-secondary/50 p-6">
-      <div className="relative flex size-44 items-center justify-center">
-        <span className="absolute inset-0 rounded-full border border-primary/30" />
-        <span
-          className="flex size-44 items-center justify-center rounded-full bg-accent transition-transform duration-[4000ms] ease-in-out"
-          style={{ transform: `scale(${scale})` }}
-        >
-          <span className="font-heading text-base font-semibold text-accent-foreground">
-            {running ? PHASES[phase].label : "Box Breathing"}
-          </span>
-        </span>
+    <div className="flex flex-col items-center justify-center p-4 w-full max-w-sm mx-auto">
+      <div className="relative flex size-56 items-center justify-center rounded-full bg-primary/10 shadow-inner">
+        <div 
+          className="absolute rounded-full bg-primary/20 transition-all duration-1000 ease-in-out"
+          style={{
+            width: isActive && (cycleStep === "In" || cycleStep === "Hold") ? "100%" : "35%",
+            height: isActive && (cycleStep === "In" || cycleStep === "Hold") ? "100%" : "35%",
+          }}
+        />
+        
+        <div className="z-10 flex flex-col items-center justify-center text-center p-4">
+          {isCompleted ? (
+            <div className="flex flex-col items-center gap-1 animate-scale-in">
+              <CheckCircle2 className="size-10 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Done</span>
+            </div>
+          ) : (
+            <>
+              <span className="text-xl font-medium tracking-wide text-foreground min-h-[28px] capitalize">
+                {isActive ? cycleStep : "Box Breath"}
+              </span>
+              
+              <span className="text-3xl font-bold font-mono tracking-tighter text-foreground mt-1">
+                {minutes}:{seconds.toString().padStart(2, '0')}
+              </span>
+              
+              {isActive && (
+                <span className="mt-1.5 text-xs font-mono bg-primary/15 text-primary px-2 py-0.5 rounded-md font-medium">
+                  {stepSeconds}s
+                </span>
+              )}
+            </>
+          )}
+        </div>
       </div>
-      <Button onClick={toggle} className="rounded-full px-6">
-        {running ? <Pause className="mr-1 size-4" /> : <Play className="mr-1 size-4" />}
-        {running ? "Stop Breath" : "Start Breath"}
-      </Button>
-      <p className="text-center text-xs text-muted-foreground">
-        3-minute reset · 4s in · 4s hold · 4s out · 4s hold
+
+      <div className="mt-6 w-full px-4">
+        {isCompleted ? (
+          <div className="rounded-2xl bg-primary/10 px-4 py-3 text-center text-xs font-semibold text-primary border border-primary/20">
+            ✓ Breathing Session Complete
+          </div>
+        ) : isActive ? (
+          <Button onClick={stopSession} variant="destructive" className="w-full rounded-2xl py-5 shadow-sm text-sm font-medium flex items-center justify-center gap-2">
+            <Square className="size-4 fill-current" /> Stop Breath
+          </Button>
+        ) : (
+          <Button onClick={startSession} className="w-full rounded-2xl py-5 shadow-sm text-sm font-medium flex items-center justify-center gap-2">
+            <Play className="size-4 fill-current" /> Start Breath
+          </Button>
+        )}
+      </div>
+      <p className="mt-3 text-[11px] text-muted-foreground tracking-normal text-center">
+        3-minute reset • 4s In • 4s Hold • 4s Out • 4s Hold Again
       </p>
     </div>
   )

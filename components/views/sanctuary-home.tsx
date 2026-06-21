@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useSync } from "@/components/sync-context"
-import { ProgressRing, SectionCard } from "@/components/sync-ui"
+import { useSync } from "../sync-context"
+import { ProgressRing, SectionCard } from "../sync-ui"
 import { BoxBreathing } from "@/components/box-breathing"
 import { Button } from "@/components/ui/button"
 import { LITERACY_CARDS } from "@/lib/sync-data"
@@ -274,11 +274,23 @@ function NutritionPane() {
 }
 
 function MentalPane() {
-  const { journal, setJournal, saveJournal, journalSaved, moodNote, setMoodNote } = useSync()
+  const { 
+    journal, 
+    setJournal, 
+    saveJournal, 
+    journalSaved, 
+    moodNote, 
+    setMoodNote, 
+    breathingCompleted, 
+    completeBreathing 
+  } = useSync()
+
   return (
     <Pane title="Mental Health" subtitle="A calmer nervous system" icon={<Brain className="size-5" />}>
       <div className="grid gap-5 md:grid-cols-2">
-        <BoxBreathing />
+        <div className="flex flex-col gap-3">
+          <BoxBreathing onComplete={completeBreathing} isCompleted={breathingCompleted} />
+        </div>
         <div className="space-y-4">
           <div>
             <p className="mb-1.5 text-xs font-medium text-muted-foreground">5-minute Cognitive Offload Journal</p>
@@ -297,7 +309,7 @@ function MentalPane() {
               </Button>
               {journalSaved && (
                 <span className="animate-fade-up flex items-center gap-1 text-xs font-medium text-primary">
-                  <Check className="size-3.5" /> Saved · pillar marked a Win
+                  <Check className="size-3.5" /> Saved · item marked a Win
                 </span>
               )}
             </div>

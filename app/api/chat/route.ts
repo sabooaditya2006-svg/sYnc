@@ -1,26 +1,26 @@
-import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+// Initialize the client once at the top level
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: Request) {
-  console.log("API Key present:", !!process.env.GEMINI_API_KEY);
   try {
     const { prompt } = await req.json();
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
-    const result = await model.generateContent(
-      `You are a helpful, compassionate assistant for someone with PMOS. Answer this question: ${prompt}`
-    );
+    // The new SDK uses ai.models.generateContent
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash", // gemini-3.5-flash is the current stable model
+      contents: prompt,
+    });
+
+    // Access the text using .text directly
+    return NextResponse.json({ reply: response.text });
     
-    const response = await result.response;
-    const text = response.text();
-    
-    return NextResponse.json({ reply: text });
   } catch (error) {
     console.error("AI Error:", error);
     return NextResponse.json(
-      { reply: "I'm having trouble connecting to my knowledge base right now. Please try again." }, 
+      { reply: "Failed to generate content. Please check your API key configuration." }, 
       { status: 500 }
     );
   }

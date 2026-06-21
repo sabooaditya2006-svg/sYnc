@@ -34,14 +34,15 @@
     "tailwindcss": "^4.2.0",
     "typescript": "5.7.3"
   },
-  "pnpm": {
+ "pnpm": {
     "overrides": {
       "hono": "4.12.25"
     },
     "onlyBuiltDependencies": [
-    "@google/genai",
-    "protobufjs",
-    "sharp"
-  ]
+  "@google/genai",
+  "protobufjs",
+  "sharp",
+  "msw"
+]
   }
 }
